@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"> <!-- Font Awesome -->
+    <style>
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: #333;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 20px;
+        }
+        .sidebar h2 {
+            text-align: center;
+        }
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            padding: 15px;
+        }
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar ul li a:hover {
+            background: #575757;
+        }
+
+        /* Container Styles */
+        .container {
+            display: flex;
+            margin-left: 270px;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Form Section Styles */
+        .form-container {
+            flex: 1;
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .form-container h3 {
+            margin-bottom: 20px;
+        }
+        .form-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-container input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Book List Section Styles */
+        .book-list {
+            flex: 2;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .book-list h3 {
+            margin-bottom: 20px;
+        }
+        .book-list .search-container {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .book-list input {
+            width: 80%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .book-list button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .book-list button:hover {
+            background-color: #0056b3;
+        }
+        .book-list table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .book-list th, .book-list td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .book-list th {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Admin</h2>
+        <ul>
+            <li><a href="admin.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="managebook.html"><i class="fas fa-book"></i> Manage Books</a></li>
+            <li><a href="#"><i class="fas fa-users"></i> Manage Users</a></li>
+            <li><a href="#"><i class="fas fa-calendar-alt"></i> Issue Records</a></li>
+            <li><a href="#"><i class="fas fa-envelope"></i> Messages</a></li>
+            <li><a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Form Section -->
+        <div class="form-container">
+            <h3>Manage Books</h3>
+            <label for="book-id">Book ID</label>
+            <input type="text" id="book-id" placeholder="Enter book ID (optional)">
+            <label for="book-title">Title</label>
+            <input type="text" id="book-title" placeholder="Enter book title">
+            <label for="book-author">Author</label>
+            <input type="text" id="book-author" placeholder="Enter book author">
+            <label for="book-genre">Genre</label>
+            <input type="text" id="book-genre" placeholder="Enter book genre">
+            <button onclick="addBook()">Add Book</button>
+        </div>
+
+        <!-- Book List Section -->
+        <div class="book-list">
+            <h3>Book List</h3>
+            <div class="search-container">
+                <input type="text" id="search-bar" placeholder="Search book...">
+                <button onclick="searchBook()">Search</button>
+            </div>
+            <table id="book-table">
+                <thead>
+                    <tr>
+                        <th>Book ID</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Genre</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Book rows will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let books = [];
+        let bookCounter = 1; // Counter for auto-generating Book IDs
+
+        function addBook() {
+    const bookId = document.getElementById("book-id").value || `B${bookCounter++}`;
+    const title = document.getElementById("book-title").value;
+    const author = document.getElementById("book-author").value;
+    const genre = document.getElementById("book-genre").value;
+
+    if (title && author && genre) {
+        const book = { id: bookId, title, author, genre };
+        
+        // Get existing books from localStorage or create an empty array if none exist
+        let books = JSON.parse(localStorage.getItem('books')) || [];
+        
+        // Add the new book to the array
+        books.push(book);
+
+        // Save the updated books array back to localStorage
+        localStorage.setItem('books', JSON.stringify(books));
+
+        renderBooks();
+        document.getElementById("book-id").value = "";
+        document.getElementById("book-title").value = "";
+        document.getElementById("book-author").value = "";
+        document.getElementById("book-genre").value = "";
+    } else {
+        alert("Please fill all fields!");
+    }
+}
+
+
+        function renderBooks() {
+            const tbody = document.querySelector("#book-table tbody");
+            tbody.innerHTML = "";
+            books.forEach((book, index) => {
+                const row = `<tr>
+                    <td>${book.id}</td>
+                    <td>${book.title}</td>
+                    <td>${book.author}</td>
+                    <td>${book.genre}</td>
+                    <td>
+                        <button onclick="editBook(${index})">Edit</button>
+                        <button onclick="deleteBook(${index})">Delete</button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function deleteBook(index) {
+            books.splice(index, 1);
+            renderBooks();
+        }
+
+        function editBook(index) {
+            const book = books[index];
+            const newId = prompt("Edit Book ID", book.id);
+            const newTitle = prompt("Edit Title", book.title);
+            const newAuthor = prompt("Edit Author", book.author);
+            const newGenre = prompt("Edit Genre", book.genre);
+
+            if (newId && newTitle && newAuthor && newGenre) {
+                books[index] = { id: newId, title: newTitle, author: newAuthor, genre: newGenre };
+                renderBooks();
+            } else {
+                alert("Please fill all fields!");
+            }
+        }
+
+        function searchBook() {
+            const query = document.getElementById("search-bar").value.toLowerCase();
+            const rows = document.querySelectorAll("#book-table tbody tr");
+            rows.forEach(row => {
+                const cells = row.querySelectorAll("td");
+                const text = Array.from(cells).slice(0, -1).map(cell => cell.innerText.toLowerCase()).join(" ");
+                row.style.display = text.includes(query) ? "" : "none";
+            });
+        }
+    </script>
+</body>
+</html>
